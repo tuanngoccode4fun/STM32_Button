@@ -53,7 +53,46 @@ static void MX_GPIO_Init(void);
 
 /* Private user code ---------------------------------------------------------*/
 /* USER CODE BEGIN 0 */
-	uint8_t button_A0;
+ uint8_t btn_current;
+ uint8_t btn_last =1;
+ uint8_t btn_filter = 1;
+ uint32_t t_debounce;
+ uint16_t cnt_press =0;
+ uint16_t cnt_release =0;
+ void btn_pressing_callback()
+ {
+	 cnt_press++;
+	 HAL_GPIO_TogglePin(GPIOC, GPIO_PIN_13);
+ }
+void btn_release_callback()
+ {
+	cnt_release++;
+ }
+ void button_handle()
+ {
+	 uint8_t sta = HAL_GPIO_ReadPin(GPIOA, GPIO_PIN_0);
+	 if(sta != btn_filter)
+	 {
+			btn_filter = sta;
+		  t_debounce = HAL_GetTick();
+	 }
+	 if(HAL_GetTick() - t_debounce >=15)
+	 {
+			btn_current = btn_filter;
+		  if(btn_current!= btn_last)
+			{
+				if(btn_current == 0)// nhan nut
+				{
+					btn_pressing_callback();
+				}
+				else // nha nut
+				{
+					btn_release_callback();
+				}
+				btn_last = btn_current;
+			}
+	 }
+ }
 /* USER CODE END 0 */
 
 /**
@@ -95,15 +134,7 @@ int main(void)
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */
-	 button_A0 = HAL_GPIO_ReadPin(GPIOA, GPIO_PIN_0);
-	 if(!button_A0)
-	 {
-			HAL_GPIO_WritePin(GPIOC,GPIO_PIN_13,GPIO_PIN_RESET);
-	 }
-	 else
-	 {
-			HAL_GPIO_WritePin(GPIOC,GPIO_PIN_13,GPIO_PIN_SET);
-	 }
+		 button_handle();
   }
   /* USER CODE END 3 */
 }

@@ -59,14 +59,20 @@ static void MX_GPIO_Init(void);
  uint32_t t_debounce;
  uint16_t cnt_press =0;
  uint16_t cnt_release =0;
+ uint32_t t_deboucelongtime;
  void btn_pressing_callback()
  {
-	 cnt_press++;
-	 HAL_GPIO_TogglePin(GPIOC, GPIO_PIN_13);
+	
+	 t_deboucelongtime = HAL_GetTick();
+	// cnt_press++;
  }
 void btn_release_callback()
  {
-	cnt_release++;
+	 if(HAL_GetTick() - t_deboucelongtime > 3000)
+	 {
+		 HAL_GPIO_TogglePin(GPIOC, GPIO_PIN_13);
+	 }
+	  //cnt_release++;
  }
  void button_handle()
  {
